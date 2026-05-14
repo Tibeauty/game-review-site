@@ -226,6 +226,11 @@ body {
   display: block;
 }
 
+/* 方图/图标：完整显示、等比例，行高与其它封面一致（由格子决定） */
+.row__thumb--contain img {
+  object-fit: contain;
+}
+
 .row__body {
   flex: 1;
   min-width: 0;
