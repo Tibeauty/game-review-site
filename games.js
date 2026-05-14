@@ -285,7 +285,7 @@
     if (!root) return;
     const cat = categories.find((c) => c.id === activeId) || categories[0];
     root.innerHTML = "";
-
+    root.style.setProperty("--games", String(cat.games.length));
     cat.games.forEach((g, i) => {
       const slug = gameSlug(cat, g, i);
       const row = document.createElement("article");
