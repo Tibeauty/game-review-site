@@ -1,5 +1,8 @@
 :root {
   color-scheme: dark;
+  /* Steam store header.jpg 规范尺寸（用于左侧封面框比例） */
+  --steam-header-w: 460;
+  --steam-header-h: 215;
   --void: #050208;
   --deep: #0a0514;
   --cyan: #00f3ff;
@@ -206,30 +209,33 @@ body {
   border-bottom: none;
 }
 
-/* 左侧图：随行高变高，约占行宽 34%–40% */
+/* 左侧封面：视口框为 Steam header 比例 460:215；图用 contain 等比放入，非该比例时以框高为准上下/左右留白 */
 .row__thumb {
-  flex: 0 0 clamp(220px, 36vw, 440px);
-  width: clamp(220px, 36vw, 440px);
+  flex: 0 0 auto;
+  align-self: center;
+  box-sizing: border-box;
+  width: min(clamp(220px, 36vw, 440px), 42%);
   max-width: 42%;
-  align-self: stretch;
+  aspect-ratio: var(--steam-header-w) / var(--steam-header-h);
+  max-height: 100%;
   min-height: 0;
+  min-width: 0;
   border: 2px solid rgba(0, 243, 255, 0.35);
   background: #05030c;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .row__thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
-  display: block;
-}
-
-/* 方图/横图海报：等比缩放填满行高、左右或上下留白时居中 */
-.row__thumb--contain img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: contain;
   object-position: center center;
+  display: block;
 }
 
 .row__body {
@@ -522,9 +528,12 @@ body {
   }
 
   .row__thumb {
-    flex: 0 0 clamp(130px, 46vw, 220px);
-    width: clamp(130px, 46vw, 220px);
+    flex: 0 0 auto;
+    width: min(clamp(130px, 46vw, 220px), 48%);
     max-width: 48%;
+    aspect-ratio: var(--steam-header-w) / var(--steam-header-h);
+    max-height: 100%;
+    min-width: 0;
   }
 
   .dock__inner {

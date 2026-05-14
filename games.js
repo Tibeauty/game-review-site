@@ -151,11 +151,10 @@
       id: "moba",
       label: { zh: "MOBA", en: "MOBA" },
       games: [
-        { title: { zh: "王者荣耀", en: "Honor of Kings" }, cover: WEB_HERO.hok, thumbFit: "contain" },
+        { title: { zh: "王者荣耀", en: "Honor of Kings" }, cover: WEB_HERO.hok },
         {
           title: { zh: "英雄联盟", en: "League of Legends" },
           cover: WEB_HERO.lol,
-          thumbFit: "contain",
         },
         { title: { zh: "Dota 2", en: "Dota 2" }, steam: 570 },
         { title: { zh: "神之浩劫", en: "SMITE" }, steam: 386360 },
@@ -169,12 +168,10 @@
         {
           title: { zh: "原神", en: "Genshin Impact" },
           cover: WEB_HERO.genshin,
-          thumbFit: "contain",
         },
         {
           title: { zh: "崩坏：星穹铁道", en: "Honkai: Star Rail" },
           cover: WEB_HERO.starRail,
-          thumbFit: "contain",
         },
         { title: { zh: "女神异闻录5", en: "Persona 5" }, steam: 1687950 },
         { title: { zh: "尼尔：自动人形", en: "NieR:Automata" }, steam: 524220 },
@@ -487,7 +484,7 @@
 
       const shown = displayTitle(g);
       row.innerHTML = `
-        <div class="row__thumb${g.thumbFit === "contain" ? " row__thumb--contain" : ""}">
+        <div class="row__thumb">
           <img alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
         </div>
         <div class="row__body">
