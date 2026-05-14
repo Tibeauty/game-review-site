@@ -101,6 +101,7 @@
       asset("hok-wide.svg"),
     ],
     lol: [
+      asset("lol-hero.png"),
       asset("lol.jpg"),
       "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Lux_0.jpg",
     ],
