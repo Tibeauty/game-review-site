@@ -8,6 +8,11 @@
   const LS_LAST = "gamescope-last-saved-at";
   const LS_LANG = "gamescope-locale";
 
+  /** 在地址栏加 `?covers=debug` 可查看每条封面配置的 URL 链与浏览器最终使用的地址 */
+  const COVERS_DEBUG =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("covers") === "debug";
+
   /** @type {"zh" | "en"} */
   let locale = "zh";
 
@@ -101,11 +106,13 @@
       asset("hok-wide.svg"),
     ],
     lol: [
-      asset("lol-hero.png"),
-      asset("lol.jpg"),
+      `${asset("lol-hero.png")}?t=20260516`,
       "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Lux_0.jpg",
     ],
-    genshin: [asset("genshin.jpg")],
+    /* 原神封面：仅使用仓库内 genshin-cover.png（可自行替换该文件） */
+    genshin: [`${asset("genshin-cover.png")}?t=genshin-20260518`],
+    /* 星穹铁道无官方 Steam 页；勿用 2357570（实为守望先锋 2）作 header 回退 */
+    starRail: [`${asset("honkai-star-rail.jpg")}?t=20260517`],
     minecraft: [asset("minecraft.png")],
   };
 
@@ -145,7 +152,11 @@
       label: { zh: "MOBA", en: "MOBA" },
       games: [
         { title: { zh: "王者荣耀", en: "Honor of Kings" }, cover: WEB_HERO.hok, thumbFit: "contain" },
-        { title: { zh: "英雄联盟", en: "League of Legends" }, cover: WEB_HERO.lol },
+        {
+          title: { zh: "英雄联盟", en: "League of Legends" },
+          cover: WEB_HERO.lol,
+          thumbFit: "contain",
+        },
         { title: { zh: "Dota 2", en: "Dota 2" }, steam: 570 },
         { title: { zh: "神之浩劫", en: "SMITE" }, steam: 386360 },
         { title: { zh: "战争仪式", en: "Battlerite" }, steam: 555850 },
@@ -155,8 +166,16 @@
       id: "anime",
       label: { zh: "二次元", en: "Anime" },
       games: [
-        { title: { zh: "原神", en: "Genshin Impact" }, cover: WEB_HERO.genshin },
-        { title: { zh: "崩坏：星穹铁道", en: "Honkai: Star Rail" }, steam: 2357570 },
+        {
+          title: { zh: "原神", en: "Genshin Impact" },
+          cover: WEB_HERO.genshin,
+          thumbFit: "contain",
+        },
+        {
+          title: { zh: "崩坏：星穹铁道", en: "Honkai: Star Rail" },
+          cover: WEB_HERO.starRail,
+          thumbFit: "contain",
+        },
         { title: { zh: "女神异闻录5", en: "Persona 5" }, steam: 1687950 },
         { title: { zh: "尼尔：自动人形", en: "NieR:Automata" }, steam: 524220 },
         { title: { zh: "破晓传说", en: "Tales of Arise" }, steam: 740130 },
@@ -258,6 +277,83 @@
       once: true,
     });
     img.src = urls.length ? urls[0] : fallbackHero(displayTitle(g));
+  }
+
+  function mountCoverDebugUI() {
+    if (!COVERS_DEBUG) return;
+    let el = document.getElementById("cover-debug");
+    if (!el) {
+      el = document.createElement("aside");
+      el.id = "cover-debug";
+      el.className = "cover-debug";
+      el.setAttribute("aria-label", "封面 URL 调试");
+      document.body.appendChild(el);
+    }
+  }
+
+  function refreshCoverDebug() {
+    if (!COVERS_DEBUG) return;
+    mountCoverDebugUI();
+    const el = document.getElementById("cover-debug");
+    const list = document.getElementById("library-root");
+    const cat = categories.find((c) => c.id === activeId) || categories[0];
+    if (!el || !list) return;
+
+    const rows = [...list.querySelectorAll(".row--compact")].map((row) => {
+      const img = row.querySelector("img");
+      const title = row.querySelector(".row__title")?.textContent?.trim() || "";
+      const chainRaw = img?.getAttribute("data-hero-chain") || "";
+      const chain = chainRaw ? chainRaw.split("|||") : [];
+      const finalSrc = img?.currentSrc || img?.src || "";
+      const decoded = !!(img && img.complete && img.naturalWidth > 0);
+      return {
+        title,
+        chain,
+        finalSrc,
+        decoded,
+        w: img?.naturalWidth || 0,
+        h: img?.naturalHeight || 0,
+      };
+    });
+
+    const chainBlock = (chain) =>
+      chain.length
+        ? `<ol class="cover-debug__chain">${chain
+            .map((u) => `<li><code title="${escHtml(u)}">${escHtml(u.length > 160 ? `${u.slice(0, 158)}…` : u)}</code></li>`)
+            .join("")}</ol>`
+        : `<p class="cover-debug__empty">（无链，仅用内置占位）</p>`;
+
+    el.innerHTML = `
+      <div class="cover-debug__head">
+        <strong>covers=debug</strong>
+        <span class="cover-debug__cat">${escHtml(categoryLabel(cat))}</span>
+      </div>
+      <p class="cover-debug__meta"><code>${escHtml(location.href)}</code></p>
+      <table class="cover-debug__table">
+        <thead>
+          <tr>
+            <th>游戏</th>
+            <th>代码里配置的 URL 链（按顺序回退）</th>
+            <th>浏览器最终地址（img.currentSrc）</th>
+            <th>像素</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows
+            .map(
+              (r) => `<tr>
+            <td>${escHtml(r.title)}</td>
+            <td class="cover-debug__cell--chain">${chainBlock(r.chain)}</td>
+            <td class="cover-debug__cell--final"><code title="${escHtml(r.finalSrc)}">${escHtml(
+                r.finalSrc.length > 120 ? `${r.finalSrc.slice(0, 118)}…` : r.finalSrc
+              )}</code></td>
+            <td>${r.decoded ? `${r.w}×${r.h}` : "…"}</td>
+          </tr>`
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
   }
 
   const storageKey = (slug) => `gamescope-review::${slug}`;
@@ -402,10 +498,22 @@
 
       const img = row.querySelector("img");
       img.alt = shown;
+      const urls = heroUrlList(g);
+      if (COVERS_DEBUG) {
+        img.loading = "eager";
+        img.setAttribute("data-hero-chain", urls.join("|||"));
+      }
       bindHeroImage(img, g);
       bindReview(row.querySelector(".row__ta"), slug);
       root.appendChild(row);
     });
+
+    if (COVERS_DEBUG) {
+      mountCoverDebugUI();
+      refreshCoverDebug();
+      requestAnimationFrame(() => refreshCoverDebug());
+      [400, 2000].forEach((ms) => setTimeout(refreshCoverDebug, ms));
+    }
   }
 
   function renderSidebar() {

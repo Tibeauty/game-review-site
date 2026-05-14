@@ -2,6 +2,7 @@
   "name": "game-review-site",
   "private": true,
   "scripts": {
-    "reviews-serve": "node server/index.mjs"
+    "reviews-serve": "node server/index.mjs",
+    "check:covers": "node scripts/check-cover-assets.mjs"
   }
 }
