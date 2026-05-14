@@ -1,6 +1,6 @@
 /**
- * 游戏库：左侧分类；Steam 用商店 header；非 Steam 用官网/发行方主视觉横图（非图标）。
- * 评价：输入写本机；底部保存可同步 server/index.mjs。
+ * 游戏库：左侧分类；每条左侧小封面 + 右侧短评；Steam / 本地 assets 图。
+ * 评价写本机；底部保存可同步 server/index.mjs。
  */
 (function () {
   const LS_API = "gamescope-api-base";
@@ -288,17 +288,16 @@
 
     cat.games.forEach((g, i) => {
       const slug = gameSlug(cat, g, i);
-      const isSteam = g.steam != null;
       const row = document.createElement("article");
-      row.className = isSteam ? "row row--hero row--steam" : "row row--hero row--web";
+      row.className = "row row--compact";
 
       row.innerHTML = `
-        <div class="row__banner">
+        <div class="row__thumb">
           <img alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
         </div>
         <div class="row__body">
           <div class="row__title">${g.title}</div>
-          <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="3" aria-label="${g.title.replace(/"/g, "&quot;")}"></textarea>
+          <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="2" aria-label="${g.title.replace(/"/g, "&quot;")}"></textarea>
         </div>
       `;
 
