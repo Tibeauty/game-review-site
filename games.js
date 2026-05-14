@@ -96,7 +96,10 @@
    * 数组为回退顺序；末项仍可为外网直链。
    */
   const WEB_HERO = {
-    hok: [asset("hok-10th-icon.png"), asset("hok-wide.svg")],
+    hok: [
+      `${asset("hok-10th-icon.png")}?t=20260514`,
+      asset("hok-wide.svg"),
+    ],
     lol: [
       asset("lol.jpg"),
       "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Lux_0.jpg",
@@ -121,7 +124,7 @@
     const T = g.title;
     if (typeof T === "string") return T;
     if (T && typeof T === "object") {
-      if (locale === "en") return T.en || T.zh || "";
+      /* 界面可切英文，游戏名保持中文 */
       return T.zh || T.en || "";
     }
     return "";
