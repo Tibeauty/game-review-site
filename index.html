@@ -3,68 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GameScope | 我的游戏库与评价</title>
-    <meta
-      name="description"
-      content="按分类展示游戏库、封面与可保存的个人评价。"
-    />
+    <title>GameScope</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Sora:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="bg-grid" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--1" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--2" aria-hidden="true"></div>
+    <div class="fx fx--grid" aria-hidden="true"></div>
+    <div class="fx fx--scan" aria-hidden="true"></div>
+    <div class="fx fx--vignette" aria-hidden="true"></div>
 
-    <header class="hero">
-      <nav class="nav" aria-label="分类导航">
-        <a class="nav__brand" href="#">GameScope</a>
-        <div class="nav__links">
-          <a href="#moba">MOBA</a>
-          <a href="#anime">二次元</a>
-          <a href="#coop">协力</a>
-          <a href="#story">叙事解谜</a>
-          <a href="#aaa">3A</a>
-          <a href="#sim">生存模拟</a>
-          <a href="#fps">FPS</a>
-        </div>
-      </nav>
-
-      <div class="hero__panel">
-        <p class="eyebrow">个人库 · 霓虹档案</p>
-        <h1>我的游戏宇宙</h1>
-        <p class="hero__lead">
-          封面来自 Steam / 公开素材；每张卡下方都可以写评价，内容会保存在本机浏览器里（换设备或清除数据会丢失）。
-        </p>
-        <div class="hero__chips">
-          <span class="chip">MOBA 巅峰记录</span>
-          <span class="chip">JRPG 全收集</span>
-          <span class="chip">双人合作清关</span>
-          <span class="chip">国产叙事解谜</span>
-        </div>
-        <a class="hero__cta" href="#library">浏览游戏库</a>
-      </div>
-    </header>
-
-    <main id="library" class="library">
-      <div class="library__intro">
-        <p class="eyebrow">Library</p>
-        <h2>分类陈列</h2>
-        <p class="library__text">
-          不足 5 款的分类已用「推荐补位」填满；叙事解谜区收录你列出的通关作品。封面加载失败时会自动切换为渐变占位图。
-        </p>
-      </div>
-      <div id="library-root"></div>
-    </main>
-
-    <footer class="footer">
-      <p>GameScope · 本地评价存储 · 可部署 GitHub Pages</p>
-    </footer>
+    <div class="app">
+      <aside id="sidebar" class="rail" aria-label="分类"></aside>
+      <main class="stage">
+        <div id="library-root" class="list"></div>
+      </main>
+    </div>
 
     <script src="games.js" defer></script>
   </body>
