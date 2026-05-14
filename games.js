@@ -6,6 +6,82 @@
   const LS_API = "gamescope-api-base";
   const LS_TOKEN = "gamescope-api-token";
   const LS_LAST = "gamescope-last-saved-at";
+  const LS_LANG = "gamescope-locale";
+
+  /** @type {"zh" | "en"} */
+  let locale = "zh";
+
+  const STR = {
+    zh: {
+      pageTitle: "GameScope",
+      railAria: "分类",
+      catNavAria: "游戏分类",
+      langBtn: "English",
+      langAria: "切换到英语",
+      dockApi: "API",
+      dockToken: "TOKEN",
+      phApi: "http://127.0.0.1:3456",
+      phToken: "可选",
+      saveBtn: "保存评价",
+      pullFail: "远程读取失败，已使用本机数据",
+      saving: "正在保存…",
+      savedLocal: "已保存到本机",
+      savedBoth: "已保存到服务器与本机",
+      savedLocalErr: "本机已保存 · 服务器失败",
+      networkErr: "网络错误",
+      lastSaved: "上次保存：",
+    },
+    en: {
+      pageTitle: "GameScope",
+      railAria: "Categories",
+      catNavAria: "Game categories",
+      langBtn: "中文",
+      langAria: "Switch to Chinese",
+      dockApi: "API",
+      dockToken: "TOKEN",
+      phApi: "http://127.0.0.1:3456",
+      phToken: "Optional",
+      saveBtn: "Save reviews",
+      pullFail: "Remote fetch failed; using local data",
+      saving: "Saving…",
+      savedLocal: "Saved locally",
+      savedBoth: "Saved to server and locally",
+      savedLocalErr: "Saved locally · server error",
+      networkErr: "network error",
+      lastSaved: "Last saved: ",
+    },
+  };
+
+  function t(key) {
+    const pack = STR[locale] || STR.zh;
+    return pack[key] != null ? pack[key] : STR.zh[key];
+  }
+
+  function loadLocale() {
+    const raw = localStorage.getItem(LS_LANG);
+    locale = raw === "en" ? "en" : "zh";
+  }
+
+  function categoryLabel(cat) {
+    const L = cat.label;
+    if (typeof L === "string") return L;
+    if (L && typeof L === "object") {
+      return L[locale] || L.zh || L.en || cat.id;
+    }
+    return cat.id;
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function reviewAria(title) {
+    const safe = title.replace(/"/g, "&quot;");
+    return locale === "zh" ? `${safe} 短评` : `Review: ${safe}`;
+  }
 
   const STEAM = (id) =>
     `https://cdn.akamai.steamstatic.com/steam/apps/${id}/header.jpg`;
@@ -44,7 +120,7 @@
   const categories = [
     {
       id: "moba",
-      label: "MOBA",
+      label: { zh: "MOBA", en: "MOBA" },
       games: [
         { title: "Honor of Kings", cover: WEB_HERO.hok },
         { title: "League of Legends", cover: WEB_HERO.lol },
@@ -55,7 +131,7 @@
     },
     {
       id: "anime",
-      label: "二次元",
+      label: { zh: "二次元", en: "Anime" },
       games: [
         { title: "Genshin Impact", cover: WEB_HERO.genshin },
         { title: "Honkai: Star Rail", steam: 2357570 },
@@ -66,7 +142,7 @@
     },
     {
       id: "coop",
-      label: "协力",
+      label: { zh: "协力", en: "Co-op" },
       games: [
         { title: "Fall Guys", steam: 1097150 },
         { title: "Content Warning", steam: 2881650 },
@@ -77,7 +153,7 @@
     },
     {
       id: "story",
-      label: "叙事解谜",
+      label: { zh: "叙事解谜", en: "Story & puzzle" },
       games: [
         { title: "Chants of Sennaar", steam: 1931770 },
         { title: "The Operator", steam: 1771980 },
@@ -100,7 +176,7 @@
     },
     {
       id: "aaa",
-      label: "3A",
+      label: { zh: "3A", en: "AAA" },
       games: [
         { title: "Blanc", steam: 2537370 },
         { title: "The Past Within", steam: 1519060 },
@@ -111,7 +187,7 @@
     },
     {
       id: "sim",
-      label: "生存模拟",
+      label: { zh: "生存模拟", en: "Survival sim" },
       games: [
         { title: "Stardew Valley", steam: 413150 },
         { title: "Minecraft", cover: WEB_HERO.minecraft },
@@ -125,7 +201,7 @@
     },
     {
       id: "fps",
-      label: "FPS",
+      label: { zh: "FPS", en: "FPS" },
       games: [
         { title: "PUBG: BATTLEGROUNDS", steam: 578080 },
         { title: "Counter-Strike 2", steam: 730 },
@@ -248,7 +324,7 @@
       const data = await r.json();
       if (data.reviews) applyRemoteReviews(data.reviews);
     } catch {
-      setStatus("远程读取失败，已使用本机数据", "warn");
+      setStatus(t("pullFail"), "warn");
     }
   }
 
@@ -297,7 +373,7 @@
         </div>
         <div class="row__body">
           <div class="row__title">${g.title}</div>
-          <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="2" aria-label="${g.title.replace(/"/g, "&quot;")}"></textarea>
+          <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="2" aria-label="${reviewAria(g.title)}"></textarea>
         </div>
       `;
 
@@ -314,7 +390,7 @@
     rail.innerHTML = categories
       .map(
         (c) =>
-          `<button type="button" class="rail__btn${c.id === activeId ? " is-active" : ""}" data-id="${c.id}">${c.label}</button>`
+          `<button type="button" class="rail__btn${c.id === activeId ? " is-active" : ""}" data-id="${c.id}">${escHtml(categoryLabel(c))}</button>`
       )
       .join("");
 
@@ -360,7 +436,7 @@
 
   function formatTime(ts) {
     try {
-      return new Date(ts).toLocaleString();
+      return new Date(ts).toLocaleString(locale === "zh" ? "zh-CN" : "en-US");
     } catch {
       return "";
     }
@@ -368,7 +444,7 @@
 
   async function onSaveClick() {
     persistDockPrefs();
-    setStatus("正在保存…", "busy");
+    setStatus(t("saving"), "busy");
     flushTextareasToStorage();
     const map = readAllReviewsMap();
     const now = Date.now();
@@ -377,16 +453,61 @@
     try {
       const res = await pushRemote(map);
       if (res && res.localOnly) {
-        setStatus(`已保存到本机 · ${formatTime(now)}`, "ok");
+        setStatus(`${t("savedLocal")} · ${formatTime(now)}`, "ok");
       } else {
-        setStatus(`已保存到服务器与本机 · ${formatTime(now)}`, "ok");
+        setStatus(`${t("savedBoth")} · ${formatTime(now)}`, "ok");
       }
     } catch (e) {
       setStatus(
-        `本机已保存 · 服务器失败（${e && e.message ? e.message : "网络错误"}）`,
+        `${t("savedLocalErr")}（${e && e.message ? e.message : t("networkErr")}）`,
         "err"
       );
     }
+  }
+
+  function initLangToggle() {
+    const btn = document.getElementById("lang-toggle");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      locale = locale === "zh" ? "en" : "zh";
+      localStorage.setItem(LS_LANG, locale);
+      applyChrome();
+    });
+  }
+
+  function applyChrome() {
+    document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
+    document.title = t("pageTitle");
+
+    const rail = document.getElementById("rail-root");
+    if (rail) rail.setAttribute("aria-label", t("railAria"));
+
+    const nav = document.getElementById("sidebar");
+    if (nav) nav.setAttribute("aria-label", t("catNavAria"));
+
+    const langBtn = document.getElementById("lang-toggle");
+    if (langBtn) {
+      langBtn.textContent = t("langBtn");
+      langBtn.setAttribute("aria-label", t("langAria"));
+    }
+
+    const apiKey = document.getElementById("dock-label-api");
+    if (apiKey) apiKey.textContent = t("dockApi");
+
+    const tokKey = document.getElementById("dock-label-token");
+    if (tokKey) tokKey.textContent = t("dockToken");
+
+    const apiInput = document.getElementById("dock-api");
+    if (apiInput) apiInput.placeholder = t("phApi");
+
+    const tokInput = document.getElementById("dock-token");
+    if (tokInput) tokInput.placeholder = t("phToken");
+
+    const saveBtn = document.getElementById("dock-save");
+    if (saveBtn) saveBtn.textContent = t("saveBtn");
+
+    renderSidebar();
+    renderList();
   }
 
   function initDock() {
@@ -402,14 +523,15 @@
   }
 
   async function boot() {
+    loadLocale();
     initDock();
+    initLangToggle();
+    applyChrome();
     await pullRemote();
-    renderSidebar();
-    renderList();
     const st = document.getElementById("dock-status");
     const last = localStorage.getItem(LS_LAST);
     if (last && st && !st.textContent.trim()) {
-      setStatus(`上次保存：${formatTime(Number(last))}`, "");
+      setStatus(`${t("lastSaved")}${formatTime(Number(last))}`, "");
     }
   }
 
