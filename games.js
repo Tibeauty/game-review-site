@@ -96,7 +96,7 @@
    * 数组为回退顺序；末项仍可为外网直链。
    */
   const WEB_HERO = {
-    hok: [asset("hok-wide.svg")],
+    hok: [asset("hok-10th-icon.png"), asset("hok-wide.svg")],
     lol: [
       asset("lol.jpg"),
       "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Lux_0.jpg",
@@ -117,97 +117,115 @@
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
 
+  function displayTitle(g) {
+    const T = g.title;
+    if (typeof T === "string") return T;
+    if (T && typeof T === "object") {
+      if (locale === "en") return T.en || T.zh || "";
+      return T.zh || T.en || "";
+    }
+    return "";
+  }
+
+  /** 评价存储 slug 始终用英文名，避免改名后丢存档 */
+  function slugSeed(g) {
+    const T = g.title;
+    if (typeof T === "string") return T;
+    if (T && typeof T === "object") return T.en || T.zh || "";
+    return "";
+  }
+
   const categories = [
     {
       id: "moba",
       label: { zh: "MOBA", en: "MOBA" },
       games: [
-        { title: "Honor of Kings", cover: WEB_HERO.hok },
-        { title: "League of Legends", cover: WEB_HERO.lol },
-        { title: "Dota 2", steam: 570 },
-        { title: "SMITE", steam: 386360 },
-        { title: "Battlerite", steam: 555850 },
+        { title: { zh: "王者荣耀", en: "Honor of Kings" }, cover: WEB_HERO.hok },
+        { title: { zh: "英雄联盟", en: "League of Legends" }, cover: WEB_HERO.lol },
+        { title: { zh: "Dota 2", en: "Dota 2" }, steam: 570 },
+        { title: { zh: "神之浩劫", en: "SMITE" }, steam: 386360 },
+        { title: { zh: "战争仪式", en: "Battlerite" }, steam: 555850 },
       ],
     },
     {
       id: "anime",
       label: { zh: "二次元", en: "Anime" },
       games: [
-        { title: "Genshin Impact", cover: WEB_HERO.genshin },
-        { title: "Honkai: Star Rail", steam: 2357570 },
-        { title: "Persona 5", steam: 1687950 },
-        { title: "NieR:Automata", steam: 524220 },
-        { title: "Tales of Arise", steam: 740130 },
+        { title: { zh: "原神", en: "Genshin Impact" }, cover: WEB_HERO.genshin },
+        { title: { zh: "崩坏：星穹铁道", en: "Honkai: Star Rail" }, steam: 2357570 },
+        { title: { zh: "女神异闻录5", en: "Persona 5" }, steam: 1687950 },
+        { title: { zh: "尼尔：自动人形", en: "NieR:Automata" }, steam: 524220 },
+        { title: { zh: "破晓传说", en: "Tales of Arise" }, steam: 740130 },
       ],
     },
     {
       id: "coop",
       label: { zh: "协力", en: "Co-op" },
       games: [
-        { title: "Fall Guys", steam: 1097150 },
-        { title: "Content Warning", steam: 2881650 },
-        { title: "We Were Here Forever", steam: 1341290 },
-        { title: "It Takes Two", steam: 1426210 },
-        { title: "Operation: Tango", steam: 1335790 },
+        { title: { zh: "糖豆人", en: "Fall Guys" }, steam: 1097150 },
+        { title: { zh: "内容警告", en: "Content Warning" }, steam: 2881650 },
+        { title: { zh: "我们永远在这里", en: "We Were Here Forever" }, steam: 1341290 },
+        { title: { zh: "双人成行", en: "It Takes Two" }, steam: 1426210 },
+        { title: { zh: "代号：探戈", en: "Operation: Tango" }, steam: 1335790 },
       ],
     },
     {
       id: "story",
       label: { zh: "叙事解谜", en: "Story & puzzle" },
       games: [
-        { title: "Chants of Sennaar", steam: 1931770 },
-        { title: "The Operator", steam: 1771980 },
-        { title: "Cyber Manhunt", steam: 1330330 },
-        { title: "Murders on the Yangtze River", steam: 1746030 },
-        { title: "Sanfu", steam: 1880330 },
-        { title: "Firework", steam: 1288310 },
-        { title: "Trinity", steam: 3084280 },
-        { title: "Word Game", steam: 1396220 },
-        { title: "Laughing to Die", steam: 2182400 },
-        { title: "Unheard", steam: 942970 },
-        { title: "The Almost Gone", steam: 1115780 },
-        { title: "Gorogoa", steam: 557600 },
-        { title: "Hacknet", steam: 365450 },
-        { title: "Little Nightmares", steam: 252550 },
-        { title: "Ori and the Will of the Wisps", steam: 1057090 },
-        { title: "Rusty Lake Trilogy", steam: 435400 },
-        { title: "Untitled Goose Game", steam: 1016600 },
+        { title: { zh: "巴别塔圣歌", en: "Chants of Sennaar" }, steam: 1931770 },
+        { title: { zh: "接线疑云", en: "The Operator" }, steam: 1771980 },
+        { title: { zh: "全网公敌", en: "Cyber Manhunt" }, steam: 1330330 },
+        { title: { zh: "山河旅探", en: "Murders on the Yangtze River" }, steam: 1746030 },
+        { title: { zh: "三伏", en: "Sanfu" }, steam: 1880330 },
+        { title: { zh: "烟火", en: "Firework" }, steam: 1288310 },
+        { title: { zh: "三相奇谈", en: "Trinity" }, steam: 3084280 },
+        { title: { zh: "文字游戏", en: "Word Game" }, steam: 1396220 },
+        { title: { zh: "喜丧", en: "Laughing to Die" }, steam: 2182400 },
+        { title: { zh: "疑案追声", en: "Unheard" }, steam: 942970 },
+        { title: { zh: "行将消逝", en: "The Almost Gone" }, steam: 1115780 },
+        { title: { zh: "画中世界", en: "Gorogoa" }, steam: 557600 },
+        { title: { zh: "黑客网络", en: "Hacknet" }, steam: 365450 },
+        { title: { zh: "小小梦魇", en: "Little Nightmares" }, steam: 252550 },
+        { title: { zh: "精灵与萤火意志", en: "Ori and the Will of the Wisps" }, steam: 1057090 },
+        { title: { zh: "锈湖三部曲", en: "Rusty Lake Trilogy" }, steam: 435400 },
+        { title: { zh: "捣蛋鹅", en: "Untitled Goose Game" }, steam: 1016600 },
       ],
     },
     {
       id: "aaa",
       label: { zh: "3A", en: "AAA" },
       games: [
-        { title: "Blanc", steam: 2537370 },
-        { title: "The Past Within", steam: 1519060 },
-        { title: "A Way Out", steam: 1222700 },
-        { title: "Death Stranding", steam: 1190460 },
-        { title: "Elden Ring", steam: 1245620 },
+        { title: { zh: "白之旅", en: "Blanc" }, steam: 2537370 },
+        { title: { zh: "内在昔日", en: "The Past Within" }, steam: 1519060 },
+        { title: { zh: "逃出生天", en: "A Way Out" }, steam: 1222700 },
+        { title: { zh: "死亡搁浅", en: "Death Stranding" }, steam: 1190460 },
+        { title: { zh: "艾尔登法环", en: "Elden Ring" }, steam: 1245620 },
       ],
     },
     {
       id: "sim",
       label: { zh: "生存模拟", en: "Survival sim" },
       games: [
-        { title: "Stardew Valley", steam: 413150 },
-        { title: "Minecraft", cover: WEB_HERO.minecraft },
-        { title: "Spiritfarer", steam: 972660 },
-        { title: "Cult of the Lamb", steam: 1123580 },
-        { title: "Don't Starve", steam: 219740 },
-        { title: "Dave the Diver", steam: 1868140 },
-        { title: "Chinese Parents", steam: 570940 },
-        { title: "Astroneer", steam: 361420 },
+        { title: { zh: "星露谷物语", en: "Stardew Valley" }, steam: 413150 },
+        { title: { zh: "我的世界", en: "Minecraft" }, cover: WEB_HERO.minecraft },
+        { title: { zh: "灵魂旅人", en: "Spiritfarer" }, steam: 972660 },
+        { title: { zh: "咩咩启示录", en: "Cult of the Lamb" }, steam: 1123580 },
+        { title: { zh: "饥荒", en: "Don't Starve" }, steam: 219740 },
+        { title: { zh: "潜水员戴夫", en: "Dave the Diver" }, steam: 1868140 },
+        { title: { zh: "中国式家长", en: "Chinese Parents" }, steam: 570940 },
+        { title: { zh: "异星探险家", en: "Astroneer" }, steam: 361420 },
       ],
     },
     {
       id: "fps",
       label: { zh: "FPS", en: "FPS" },
       games: [
-        { title: "PUBG: BATTLEGROUNDS", steam: 578080 },
-        { title: "Counter-Strike 2", steam: 730 },
-        { title: "Apex Legends", steam: 1172470 },
-        { title: "DOOM Eternal", steam: 782330 },
-        { title: "Borderlands 3", steam: 397540 },
+        { title: { zh: "绝地求生", en: "PUBG: BATTLEGROUNDS" }, steam: 578080 },
+        { title: { zh: "反恐精英2", en: "Counter-Strike 2" }, steam: 730 },
+        { title: { zh: "Apex英雄", en: "Apex Legends" }, steam: 1172470 },
+        { title: { zh: "毁灭战士：永恒", en: "DOOM Eternal" }, steam: 782330 },
+        { title: { zh: "无主之地3", en: "Borderlands 3" }, steam: 397540 },
       ],
     },
   ];
@@ -228,14 +246,14 @@
         img.src = urls[attempt];
       } else {
         img.removeEventListener("error", onErr);
-        img.src = fallbackHero(g.title);
+        img.src = fallbackHero(displayTitle(g));
       }
     };
     img.addEventListener("error", onErr);
     img.addEventListener("load", () => img.removeEventListener("error", onErr), {
       once: true,
     });
-    img.src = urls.length ? urls[0] : fallbackHero(g.title);
+    img.src = urls.length ? urls[0] : fallbackHero(displayTitle(g));
   }
 
   const storageKey = (slug) => `gamescope-review::${slug}`;
@@ -249,7 +267,7 @@
   }
 
   function gameSlug(cat, game, index) {
-    const base = slugify(game.title);
+    const base = slugify(slugSeed(game));
     return `${cat.id}-${index}-${base || "game"}`;
   }
 
@@ -367,17 +385,19 @@
       const row = document.createElement("article");
       row.className = "row row--compact";
 
+      const shown = displayTitle(g);
       row.innerHTML = `
         <div class="row__thumb">
           <img alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
         </div>
         <div class="row__body">
-          <div class="row__title">${g.title}</div>
-          <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="2" aria-label="${reviewAria(g.title)}"></textarea>
+          <div class="row__title">${escHtml(shown)}</div>
+          <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="2" aria-label="${reviewAria(shown)}"></textarea>
         </div>
       `;
 
       const img = row.querySelector("img");
+      img.alt = shown;
       bindHeroImage(img, g);
       bindReview(row.querySelector(".row__ta"), slug);
       root.appendChild(row);
