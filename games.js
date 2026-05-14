@@ -273,7 +273,7 @@
           </div>
           <div class="row__body">
             <div class="row__title">${g.title}</div>
-            <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="5" aria-label="${g.title.replace(/"/g, "&quot;")}"></textarea>
+            <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="8" aria-label="${g.title.replace(/"/g, "&quot;")}"></textarea>
           </div>
         `;
       } else {
@@ -283,7 +283,7 @@
           </div>
           <div class="row__body">
             <div class="row__title">${g.title}</div>
-            <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="5" aria-label="${g.title.replace(/"/g, "&quot;")}"></textarea>
+            <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="8" aria-label="${g.title.replace(/"/g, "&quot;")}"></textarea>
           </div>
         `;
       }
