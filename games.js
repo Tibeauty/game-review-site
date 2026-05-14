@@ -10,25 +10,23 @@
   const STEAM = (id) =>
     `https://cdn.akamai.steamstatic.com/steam/apps/${id}/header.jpg`;
 
+  /** 与 index.html 同级的静态图（GitHub Pages / 外链 403 时仍可用） */
+  function asset(file) {
+    return new URL(`assets/covers/${file}`, window.location.href).href;
+  }
+
   /**
-   * 非 Steam：官网/发行渠道常见横版主视觉（直链可能随官网调整失效，可自行替换）。
-   * 使用数组时按顺序自动回退。
+   * 非 Steam：优先使用仓库内 assets/covers（可自己替换文件）。
+   * 数组为回退顺序；末项仍可为外网直链。
    */
   const WEB_HERO = {
-    hok: [
-      "https://www.honorofkings.com/resource/images/index/kv.jpg",
-      "https://game.gtimg.cn/images/yxzj/web202012/index_banner/pc/0.jpg",
-    ],
+    hok: [asset("hok-wide.svg")],
     lol: [
+      asset("lol.jpg"),
       "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Lux_0.jpg",
     ],
-    genshin: [
-      "https://cdn1.epicgames.com/salesEvent/salesEvent/EGS_GenshinImpact_miHoYoLimited_S1_2560x1440-231d530af262b191cd174288f7e3d59d.jpeg",
-      "https://cdn2.unrealengine.com/egs-genshinimpact-mihoyo-limited-genshinimpact-nassets-2560x1440-2560x1440-65aa42fe13f90.jpg",
-    ],
-    minecraft: [
-      "https://cdn1.epicgames.com/salesEvent/salesEvent/MinecraftBedrock_EGS_EGS_MinecraftBedrock_Wide_2560x1440_2560x1440-aa5005cca1a85a7d17239c82f6cd21b6.jpg",
-    ],
+    genshin: [asset("genshin.jpg")],
+    minecraft: [asset("minecraft.png")],
   };
 
   const fallbackHero = (title) => {
@@ -300,7 +298,7 @@
         </div>
         <div class="row__body">
           <div class="row__title">${g.title}</div>
-          <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="4" aria-label="${g.title.replace(/"/g, "&quot;")}"></textarea>
+          <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="3" aria-label="${g.title.replace(/"/g, "&quot;")}"></textarea>
         </div>
       `;
 

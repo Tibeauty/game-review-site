@@ -160,8 +160,9 @@ body {
   gap: clamp(18px, 2.2vw, 26px);
 }
 
-/* Steam 商店 header ≈ 460×215 */
-.row--steam .row__banner {
+/* Steam header 与「非 Steam 横幅」统一为商店条比例，视觉大小一致 */
+.row--steam .row__banner,
+.row--web .row__banner {
   flex-shrink: 0;
   align-self: stretch;
   width: 100%;
@@ -174,18 +175,9 @@ body {
   overflow: hidden;
 }
 
-/* 官网主视觉常见 16:9 */
 .row--web .row__banner {
-  flex-shrink: 0;
-  align-self: stretch;
-  width: 100%;
-  max-width: 100%;
-  aspect-ratio: 16 / 9;
-  min-height: 140px;
-  border: 3px solid rgba(255, 42, 109, 0.38);
+  border-color: rgba(255, 42, 109, 0.38);
   box-shadow: 0 0 0 1px rgba(0, 243, 255, 0.2), 0 0 48px rgba(255, 42, 109, 0.12);
-  background: #020108;
-  overflow: hidden;
 }
 
 .row--steam .row__banner img,
@@ -201,11 +193,11 @@ body {
 .row__body {
   flex: 0 1 auto;
   width: 100%;
-  max-width: 36rem;
+  max-width: 28rem;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1vw, 12px);
+  gap: clamp(6px, 0.8vw, 10px);
 }
 
 .row__title {
@@ -221,17 +213,17 @@ body {
 .row__ta {
   width: 100%;
   resize: vertical;
-  min-height: clamp(72px, 9vh, 120px);
-  max-height: 40vh;
-  padding: 12px 14px;
+  min-height: clamp(52px, 7vh, 88px);
+  max-height: 22vh;
+  padding: 10px 12px;
   border: 2px solid rgba(0, 243, 255, 0.3);
   border-radius: 0;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
   background: rgba(0, 0, 0, 0.58);
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: clamp(0.95rem, 1.05vw, 1.05rem);
-  line-height: 1.5;
+  font-size: clamp(0.85rem, 0.95vw, 0.98rem);
+  line-height: 1.45;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
