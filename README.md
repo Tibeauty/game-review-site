@@ -1,2 +1,3 @@
 # game-review-site
-A public website project for game reviews.
+
+A simple public website project for game reviews, ready to publish with GitHub Pages.

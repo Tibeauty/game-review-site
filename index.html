@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GameScope | 游戏评价站</title>
+    <meta
+      name="description"
+      content="一个轻量的游戏评价网站 demo，展示游戏评分、简评与推荐理由。"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__content">
+        <p class="eyebrow">GameScope</p>
+        <h1>简单直接的游戏评价</h1>
+        <p class="hero__text">
+          看评分、看优缺点、看一句话推荐。这个 demo
+          先做一个很轻的首页，后面可以继续扩展成完整游戏点评网站。
+        </p>
+        <a class="hero__button" href="#reviews">查看示例评价</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="section intro">
+        <div class="section__title">
+          <p class="eyebrow">网站方向</p>
+          <h2>适合做什么</h2>
+        </div>
+        <div class="intro__grid">
+          <article class="card">
+            <h3>快速评分</h3>
+            <p>每款游戏给出一个直观分数，方便用户先快速筛选。</p>
+          </article>
+          <article class="card">
+            <h3>一句话点评</h3>
+            <p>用最短的话说清楚这款游戏值不值得玩。</p>
+          </article>
+          <article class="card">
+            <h3>后续可扩展</h3>
+            <p>以后可以继续加搜索、分类、标签、排行榜和投稿系统。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section reviews" id="reviews">
+        <div class="section__title">
+          <p class="eyebrow">Demo Reviews</p>
+          <h2>示例游戏评价</h2>
+        </div>
+        <div class="reviews__grid">
+          <article class="review-card">
+            <div class="review-card__top">
+              <h3>Hades</h3>
+              <span class="score">9.4</span>
+            </div>
+            <p class="tag">动作 Roguelike</p>
+            <p>
+              节奏顺、打击感强、剧情推进自然，是那种“再来一局就睡”的代表作。
+            </p>
+          </article>
+
+          <article class="review-card">
+            <div class="review-card__top">
+              <h3>Stardew Valley</h3>
+              <span class="score">9.0</span>
+            </div>
+            <p class="tag">模拟经营</p>
+            <p>
+              轻松耐玩，内容密度很高，适合想慢下来、长期经营自己世界的玩家。
+            </p>
+          </article>
+
+          <article class="review-card">
+            <div class="review-card__top">
+              <h3>Celeste</h3>
+              <span class="score">9.2</span>
+            </div>
+            <p class="tag">平台跳跃</p>
+            <p>
+              操作精准、关卡设计漂亮，同时还有非常真诚的情绪表达。
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>GameScope Demo · Built for GitHub Pages</p>
+    </footer>
+  </body>
+</html>
