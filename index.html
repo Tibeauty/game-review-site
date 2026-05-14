@@ -20,10 +20,44 @@
     <div class="app">
       <aside id="sidebar" class="rail" aria-label="分类"></aside>
       <main class="stage">
-        <div id="library-root" class="list"></div>
+        <div class="stage__scroll">
+          <div id="library-root" class="list"></div>
+        </div>
+        <footer class="dock" id="save-dock">
+          <div class="dock__inner">
+            <label class="dock__field">
+              <span class="dock__key">API</span>
+              <input
+                id="dock-api"
+                class="dock__input"
+                type="url"
+                inputmode="url"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="http://127.0.0.1:3456"
+              />
+            </label>
+            <label class="dock__field">
+              <span class="dock__key">TOKEN</span>
+              <input
+                id="dock-token"
+                class="dock__input"
+                type="password"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="可选"
+              />
+            </label>
+            <button type="button" class="dock__btn" id="dock-save">
+              保存评价
+            </button>
+            <p class="dock__status" id="dock-status" aria-live="polite"></p>
+          </div>
+        </footer>
       </main>
     </div>
 
+    <script src="api-config.js"></script>
     <script src="games.js" defer></script>
   </body>
 </html>
