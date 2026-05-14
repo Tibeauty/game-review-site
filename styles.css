@@ -154,7 +154,13 @@ body {
   gap: clamp(18px, 2.2vw, 26px);
 }
 
-/* Steam 商店 header ≈ 460×215，必须用字面比例；勿用 var() 包一层以免部分浏览器算不出高度变方图 */
+.row--web {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(18px, 2.2vw, 26px);
+}
+
+/* Steam 商店 header ≈ 460×215 */
 .row--steam .row__banner {
   flex-shrink: 0;
   align-self: stretch;
@@ -168,7 +174,22 @@ body {
   overflow: hidden;
 }
 
-.row--steam .row__banner img {
+/* 官网主视觉常见 16:9 */
+.row--web .row__banner {
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 140px;
+  border: 3px solid rgba(255, 42, 109, 0.38);
+  box-shadow: 0 0 0 1px rgba(0, 243, 255, 0.2), 0 0 48px rgba(255, 42, 109, 0.12);
+  background: #020108;
+  overflow: hidden;
+}
+
+.row--steam .row__banner img,
+.row--web .row__banner img {
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -177,42 +198,14 @@ body {
   filter: saturate(1.12) contrast(1.04);
 }
 
-.row--icon {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: clamp(20px, 3vw, 36px);
-}
-
-.row__iconbox {
-  flex: 0 0 clamp(240px, 28vw, 340px);
-  width: clamp(240px, 28vw, 340px);
-  min-height: clamp(240px, 28vw, 340px);
-  border: 2px solid rgba(255, 42, 109, 0.45);
-  box-shadow: 0 0 0 1px rgba(0, 243, 255, 0.2), 0 0 48px rgba(255, 42, 109, 0.15);
-  background: radial-gradient(circle at 40% 30%, rgba(0, 243, 255, 0.12), transparent 62%),
-    #070212;
-  display: grid;
-  place-items: center;
-  padding: clamp(16px, 2vw, 28px);
-}
-
-.row__iconbox img {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  display: block;
-  filter: drop-shadow(0 0 18px rgba(0, 243, 255, 0.25));
-}
-
 .row__body {
-  flex: 1;
+  flex: 0 1 auto;
+  width: 100%;
+  max-width: 36rem;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: clamp(10px, 1.2vw, 14px);
+  gap: clamp(8px, 1vw, 12px);
 }
 
 .row__title {
@@ -228,16 +221,17 @@ body {
 .row__ta {
   width: 100%;
   resize: vertical;
-  min-height: clamp(180px, 28vh, 320px);
-  padding: 18px 20px;
+  min-height: clamp(72px, 9vh, 120px);
+  max-height: 40vh;
+  padding: 12px 14px;
   border: 2px solid rgba(0, 243, 255, 0.3);
   border-radius: 0;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
   background: rgba(0, 0, 0, 0.58);
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: clamp(1.08rem, 1.35vw, 1.35rem);
-  line-height: 1.55;
+  font-size: clamp(0.95rem, 1.05vw, 1.05rem);
+  line-height: 1.5;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -385,14 +379,8 @@ body {
     overflow: visible;
   }
 
-  .row--icon {
-    flex-direction: column;
-  }
-
-  .row__iconbox {
-    width: 100%;
-    max-width: min(100%, 360px);
-    min-height: 240px;
+  .row__body {
+    max-width: 100%;
   }
 
   .dock__inner {

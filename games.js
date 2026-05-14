@@ -1,6 +1,6 @@
 /**
- * 游戏库：左侧分类；Steam 用商店 header 比例；非 Steam 用大图标。
- * 评价：输入实时写入本机；底部「保存评价」同步到可选后端（见 server/index.mjs）。
+ * 游戏库：左侧分类；Steam 用商店 header；非 Steam 用官网/发行方主视觉横图（非图标）。
+ * 评价：输入写本机；底部保存可同步 server/index.mjs。
  */
 (function () {
   const LS_API = "gamescope-api-base";
@@ -10,21 +10,30 @@
   const STEAM = (id) =>
     `https://cdn.akamai.steamstatic.com/steam/apps/${id}/header.jpg`;
 
-  const FAV = (origin) =>
-    `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(
-      origin
-    )}&size=256`;
-
-  const ICON = {
-    hok: FAV("https://pvp.qq.com/"),
-    lol: FAV("https://www.leagueoflegends.com/"),
-    genshin: FAV("https://genshin.hoyoverse.com/"),
-    minecraft: FAV("https://www.minecraft.net/"),
+  /**
+   * 非 Steam：官网/发行渠道常见横版主视觉（直链可能随官网调整失效，可自行替换）。
+   * 使用数组时按顺序自动回退。
+   */
+  const WEB_HERO = {
+    hok: [
+      "https://www.honorofkings.com/resource/images/index/kv.jpg",
+      "https://game.gtimg.cn/images/yxzj/web202012/index_banner/pc/0.jpg",
+    ],
+    lol: [
+      "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Lux_0.jpg",
+    ],
+    genshin: [
+      "https://cdn1.epicgames.com/salesEvent/salesEvent/EGS_GenshinImpact_miHoYoLimited_S1_2560x1440-231d530af262b191cd174288f7e3d59d.jpeg",
+      "https://cdn2.unrealengine.com/egs-genshinimpact-mihoyo-limited-genshinimpact-nassets-2560x1440-2560x1440-65aa42fe13f90.jpg",
+    ],
+    minecraft: [
+      "https://cdn1.epicgames.com/salesEvent/salesEvent/MinecraftBedrock_EGS_EGS_MinecraftBedrock_Wide_2560x1440_2560x1440-aa5005cca1a85a7d17239c82f6cd21b6.jpg",
+    ],
   };
 
-  const fallbackIcon = (title) => {
+  const fallbackHero = (title) => {
     const safe = title.replace(/</g, "&lt;").replace(/"/g, "&quot;");
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><rect fill="#0d0221" width="256" height="256"/><rect x="12" y="12" width="232" height="232" fill="none" stroke="#00f3ff" stroke-width="3" opacity="0.55"/><text x="128" y="140" fill="#ff2a6d" font-family="system-ui,sans-serif" font-size="18" font-weight="800" text-anchor="middle">${safe}</text></svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="540" viewBox="0 0 1920 540"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d0221"/><stop offset="100%" stop-color="#12061f"/></linearGradient></defs><rect width="1920" height="540" fill="url(#g)"/><rect x="24" y="24" width="1872" height="492" fill="none" stroke="#00f3ff" stroke-width="3" opacity="0.45"/><text x="960" y="290" fill="#ff2a6d" font-family="system-ui,sans-serif" font-size="42" font-weight="800" text-anchor="middle">${safe}</text></svg>`;
     return `data:image/svg+xml,${encodeURIComponent(svg)}`;
   };
 
@@ -39,8 +48,8 @@
       id: "moba",
       label: "MOBA",
       games: [
-        { title: "Honor of Kings", icon: ICON.hok },
-        { title: "League of Legends", icon: ICON.lol },
+        { title: "Honor of Kings", cover: WEB_HERO.hok },
+        { title: "League of Legends", cover: WEB_HERO.lol },
         { title: "Dota 2", steam: 570 },
         { title: "SMITE", steam: 386360 },
         { title: "Battlerite", steam: 555850 },
@@ -50,7 +59,7 @@
       id: "anime",
       label: "二次元",
       games: [
-        { title: "Genshin Impact", icon: ICON.genshin },
+        { title: "Genshin Impact", cover: WEB_HERO.genshin },
         { title: "Honkai: Star Rail", steam: 2357570 },
         { title: "Persona 5", steam: 1687950 },
         { title: "NieR:Automata", steam: 524220 },
@@ -107,7 +116,7 @@
       label: "生存模拟",
       games: [
         { title: "Stardew Valley", steam: 413150 },
-        { title: "Minecraft", icon: ICON.minecraft },
+        { title: "Minecraft", cover: WEB_HERO.minecraft },
         { title: "Spiritfarer", steam: 972660 },
         { title: "Cult of the Lamb", steam: 1123580 },
         { title: "Don't Starve", steam: 219740 },
@@ -129,10 +138,30 @@
     },
   ];
 
-  function thumbUrl(g) {
-    if (g.steam != null) return STEAM(g.steam);
-    if (g.icon) return g.icon;
-    return fallbackIcon(g.title);
+  function heroUrlList(g) {
+    if (g.steam != null) return [STEAM(g.steam)];
+    if (Array.isArray(g.cover)) return g.cover.filter(Boolean);
+    if (typeof g.cover === "string" && g.cover) return [g.cover];
+    return [];
+  }
+
+  function bindHeroImage(img, g) {
+    const urls = heroUrlList(g);
+    let attempt = 0;
+    const onErr = () => {
+      attempt += 1;
+      if (attempt < urls.length) {
+        img.src = urls[attempt];
+      } else {
+        img.removeEventListener("error", onErr);
+        img.src = fallbackHero(g.title);
+      }
+    };
+    img.addEventListener("error", onErr);
+    img.addEventListener("load", () => img.removeEventListener("error", onErr), {
+      once: true,
+    });
+    img.src = urls.length ? urls[0] : fallbackHero(g.title);
   }
 
   const storageKey = (slug) => `gamescope-review::${slug}`;
@@ -261,37 +290,22 @@
 
     cat.games.forEach((g, i) => {
       const slug = gameSlug(cat, g, i);
-      const src = thumbUrl(g);
       const isSteam = g.steam != null;
       const row = document.createElement("article");
-      row.className = isSteam ? "row row--steam" : "row row--icon";
+      row.className = isSteam ? "row row--hero row--steam" : "row row--hero row--web";
 
-      if (isSteam) {
-        row.innerHTML = `
-          <div class="row__banner">
-            <img src="${src}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
-          </div>
-          <div class="row__body">
-            <div class="row__title">${g.title}</div>
-            <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="8" aria-label="${g.title.replace(/"/g, "&quot;")}"></textarea>
-          </div>
-        `;
-      } else {
-        row.innerHTML = `
-          <div class="row__iconbox">
-            <img src="${src}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
-          </div>
-          <div class="row__body">
-            <div class="row__title">${g.title}</div>
-            <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="8" aria-label="${g.title.replace(/"/g, "&quot;")}"></textarea>
-          </div>
-        `;
-      }
+      row.innerHTML = `
+        <div class="row__banner">
+          <img alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+        </div>
+        <div class="row__body">
+          <div class="row__title">${g.title}</div>
+          <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="4" aria-label="${g.title.replace(/"/g, "&quot;")}"></textarea>
+        </div>
+      `;
 
       const img = row.querySelector("img");
-      img.addEventListener("error", () => {
-        img.src = fallbackIcon(g.title);
-      });
+      bindHeroImage(img, g);
       bindReview(row.querySelector(".row__ta"), slug);
       root.appendChild(row);
     });
