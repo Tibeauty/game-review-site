@@ -114,6 +114,8 @@
     /* 星穹铁道无官方 Steam 页；勿用 2357570（实为守望先锋 2）作 header 回退 */
     starRail: [`${asset("honkai-star-rail.jpg")}?t=20260517`],
     minecraft: [asset("minecraft.png")],
+    valorant: [`${asset("valorant.png")}?t=20260514`],
+    deltaForce: [`${asset("delta-force.png")}?t=20260514`],
   };
 
   const fallbackHero = (title) => {
@@ -146,12 +148,25 @@
     return "";
   }
 
+  /** 王者荣耀默认短评（本机无存档时展示） */
+  const HOK_DEFAULT_REVIEW = `主包第一个玩的游戏，也是主包玩的最久的一个游戏，大概也就玩了5000个小时吧。在我还懵懂的时候，这个有着亚瑟头的游戏闯入了小小的老子的生活并一发不可收拾。请苍天，辨忠奸！
+
+王者大火的原因个人觉得吃到了时代的红利以及背靠大厂。王者的玩法本质就是MOBA体系，而且早期很多的角色技能都借鉴（抄袭）了某游戏。但我觉得他很聪明的一点就是把握住了手游的精髓：节奏快，玩家年轻。所以，他把游戏时间缩短到10-15分钟，且没有红蓝方的大区分，有些英雄上手很容易，让玩家有玩下去的欲望。
+
+不知道这样的改变是不是王者的原创，总之是个很聪明的做法。王者能在多久之后仍然保持霸主的地位是我没有想到的，现在的英雄设计很多也很有特色，比如新出的大司命我觉得就很创新。皮肤也是特效越来越华丽，每年的年限真的很好看。但是！再次强调，主包虽然游玩5000个小时，但是居然只充了300不到，我的天呐，当时小小的老子只舍得充6元皮，马可波罗到现在用的还是换的激情绿茵。不像某原，入坑一周就-648，千言万语汇成一句话：mhy退钱！
+
+对于最近两年新出的人机风波，主包也是略有耳闻。每个长期运行的pvp游戏肯定需要人机来维持游戏的日常，但是让王者这么明显的让人机操纵游戏的胜负真的是少见。个人认为，王者策划这样死不承认的方式然后悄悄暗改其实也是取舍后的结果吧，毕竟如果道歉什么的舆论更加发酵，到时候又要补偿，补偿不满意甚至会导致大量玩家退坑之类的，得不偿失。不如就咬死，然后等风波过去。现在大家应该都心知肚明。`;
+
   const categories = [
     {
       id: "moba",
       label: { zh: "MOBA", en: "MOBA" },
       games: [
-        { title: { zh: "王者荣耀", en: "Honor of Kings" }, cover: WEB_HERO.hok },
+        {
+          title: { zh: "王者荣耀", en: "Honor of Kings" },
+          cover: WEB_HERO.hok,
+          defaultReview: HOK_DEFAULT_REVIEW,
+        },
         {
           title: { zh: "英雄联盟", en: "League of Legends" },
           cover: WEB_HERO.lol,
@@ -244,8 +259,8 @@
         { title: { zh: "绝地求生", en: "PUBG: BATTLEGROUNDS" }, steam: 578080 },
         { title: { zh: "反恐精英2", en: "Counter-Strike 2" }, steam: 730 },
         { title: { zh: "Apex英雄", en: "Apex Legends" }, steam: 1172470 },
-        { title: { zh: "毁灭战士：永恒", en: "DOOM Eternal" }, steam: 782330 },
-        { title: { zh: "无主之地3", en: "Borderlands 3" }, steam: 397540 },
+        { title: { zh: "无畏契约", en: "Valorant" }, cover: WEB_HERO.valorant },
+        { title: { zh: "三角洲行动", en: "Delta Force" }, cover: WEB_HERO.deltaForce },
       ],
     },
   ];
@@ -313,12 +328,21 @@
       };
     });
 
-    const chainBlock = (chain) =>
-      chain.length
-        ? `<ol class="cover-debug__chain">${chain
-            .map((u) => `<li><code title="${escHtml(u)}">${escHtml(u.length > 160 ? `${u.slice(0, 158)}…` : u)}</code></li>`)
-            .join("")}</ol>`
-        : `<p class="cover-debug__empty">（无链，仅用内置占位）</p>`;
+    const chainBlock = (chain) => {
+      if (!chain.length) {
+        return '<p class="cover-debug__empty">（无链，仅用内置占位）</p>';
+      }
+      return (
+        '<ol class="cover-debug__chain">' +
+        chain
+          .map((u) => {
+            const label = u.length > 160 ? u.slice(0, 158) + "…" : u;
+            return '<li><code title="' + escHtml(u) + '">' + escHtml(label) + "</code></li>";
+          })
+          .join("") +
+        "</ol>"
+      );
+    };
 
     el.innerHTML = `
       <div class="cover-debug__head">
@@ -337,16 +361,29 @@
         </thead>
         <tbody>
           ${rows
-            .map(
-              (r) => `<tr>
-            <td>${escHtml(r.title)}</td>
-            <td class="cover-debug__cell--chain">${chainBlock(r.chain)}</td>
-            <td class="cover-debug__cell--final"><code title="${escHtml(r.finalSrc)}">${escHtml(
-                r.finalSrc.length > 120 ? `${r.finalSrc.slice(0, 118)}…` : r.finalSrc
-              )}</code></td>
-            <td>${r.decoded ? `${r.w}×${r.h}` : "…"}</td>
-          </tr>`
-            )
+            .map((r) => {
+              const srcShort =
+                r.finalSrc.length > 120 ? r.finalSrc.slice(0, 118) + "…" : r.finalSrc;
+              const px = r.decoded ? r.w + "×" + r.h : "…";
+              return (
+                "<tr>" +
+                "<td>" +
+                escHtml(r.title) +
+                "</td>" +
+                '<td class="cover-debug__cell--chain">' +
+                chainBlock(r.chain) +
+                "</td>" +
+                '<td class="cover-debug__cell--final"><code title="' +
+                escHtml(r.finalSrc) +
+                '">' +
+                escHtml(srcShort) +
+                "</code></td>" +
+                "<td>" +
+                px +
+                "</td>" +
+                "</tr>"
+              );
+            })
             .join("")}
         </tbody>
       </table>
@@ -462,13 +499,23 @@
     return r.json();
   }
 
-  function bindReview(ta, slug) {
+  function bindReview(ta, slug, defaultText) {
     const k = storageKey(slug);
     const saved = localStorage.getItem(k);
-    if (saved) ta.value = saved;
+    if (saved !== null && saved !== "") {
+      ta.value = saved;
+    } else if (defaultText) {
+      ta.value = defaultText;
+    }
     ta.addEventListener("input", () => {
       localStorage.setItem(k, ta.value);
     });
+  }
+
+  function reviewTextareaRows() {
+    // 固定保持原始输入框高度，超出部分通过 CSS 折叠（overflow:hidden），
+    // 聚焦时允许滚动查看。
+    return 2;
   }
 
   function renderList() {
@@ -483,13 +530,16 @@
       row.className = "row row--compact";
 
       const shown = displayTitle(g);
+      const taRows = reviewTextareaRows(g);
       row.innerHTML = `
         <div class="row__thumb">
-          <img alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+          <span class="row__thumb__mat">
+            <img alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+          </span>
+          <div class="row__title">${escHtml(shown)}</div>
         </div>
         <div class="row__body">
-          <div class="row__title">${escHtml(shown)}</div>
-          <textarea class="row__ta" data-slug="${slug}" spellcheck="false" rows="2" aria-label="${reviewAria(shown)}"></textarea>
+          <textarea class="row__ta${g.defaultReview ? " row__ta--long" : ""}" data-slug="${slug}" spellcheck="false" rows="${taRows}" aria-label="${reviewAria(shown)}"></textarea>
         </div>
       `;
 
@@ -501,7 +551,7 @@
         img.setAttribute("data-hero-chain", urls.join("|||"));
       }
       bindHeroImage(img, g);
-      bindReview(row.querySelector(".row__ta"), slug);
+      bindReview(row.querySelector(".row__ta"), slug, g.defaultReview);
       root.appendChild(row);
     });
 

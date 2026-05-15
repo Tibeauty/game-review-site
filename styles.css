@@ -1,8 +1,10 @@
 :root {
   color-scheme: dark;
-  /* Steam store header.jpg 规范尺寸（用于左侧封面框比例） */
+  /* Steam store header.jpg 像素规格（封面框默认按此尺寸显示） */
   --steam-header-w: 460;
   --steam-header-h: 215;
+  --steam-thumb-w: 460px;
+  --steam-thumb-h: 215px;
   --void: #050208;
   --deep: #0a0514;
   --cyan: #00f3ff;
@@ -166,23 +168,25 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   overflow-y: auto;
 }
 
-/* 均分主区域高度：每类 N 条 → N 行 1fr（由 JS 写入 --games） */
+/* 列表：高度随内容（不在 flex 里被 min-height:0 压扁），避免各行叠在一起 */
 .list {
   --games: 1;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   align-self: stretch;
   width: 100%;
   max-width: none;
-  min-height: 0;
+  min-height: min-content;
   margin: 0;
   padding: clamp(6px, 1vh, 14px) clamp(14px, 2.2vw, 32px);
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: repeat(var(--games), minmax(0, 1fr));
-  gap: 0;
+  grid-template-rows: repeat(var(--games), auto);
+  gap: clamp(12px, 1.4vh, 22px) 0;
+  align-content: start;
   font-size: clamp(15px, 1.25vh + 0.45vw, 20px);
 }
 
@@ -198,10 +202,14 @@ body {
 .row--compact {
   display: flex;
   flex-direction: row;
-  align-items: stretch;
-  gap: clamp(12px, 1.8vw, 28px);
-  padding: clamp(4px, 0.6vh, 10px) 0;
-  min-height: 0;
+  align-items: flex-start;
+  gap: clamp(14px, 2vw, 28px);
+  padding: clamp(12px, 1.4vh, 22px) 0;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: min-content;
+  position: relative;
+  z-index: 0;
   border-bottom: 1px solid rgba(0, 243, 255, 0.12);
 }
 
@@ -209,62 +217,91 @@ body {
   border-bottom: none;
 }
 
-/* 左侧封面：视口框为 Steam header 比例 460:215；图用 contain 等比放入，非该比例时以框高为准上下/左右留白 */
+/* 左侧封面：标题叠在图左上角；mat 为实际尺寸参考 */
 .row__thumb {
+  position: relative;
   flex: 0 0 auto;
-  align-self: center;
-  box-sizing: border-box;
-  width: min(clamp(220px, 36vw, 440px), 42%);
-  max-width: 42%;
-  aspect-ratio: var(--steam-header-w) / var(--steam-header-h);
-  max-height: 100%;
-  min-height: 0;
-  min-width: 0;
-  border: 2px solid rgba(0, 243, 255, 0.35);
-  background: #05030c;
-  overflow: hidden;
+  flex-shrink: 0;
+  align-self: flex-start;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
+  max-width: min(var(--steam-thumb-w), 46%);
+  min-width: 0;
+  overflow: visible;
+  background: none;
 }
 
-.row__thumb img {
+.row__thumb__mat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   max-width: 100%;
-  max-height: 100%;
+  box-sizing: border-box;
+  padding: 2px;
+  background: linear-gradient(
+    125deg,
+    var(--cyan),
+    #7afcff,
+    var(--magenta),
+    #d4a5ff,
+    var(--lime),
+    #e8ff9a,
+    var(--cyan)
+  );
+}
+
+.row__thumb__mat img {
+  display: block;
+  max-width: min(var(--steam-thumb-w), 100%);
+  max-height: var(--steam-thumb-h);
   width: auto;
   height: auto;
   object-fit: contain;
-  object-position: center center;
-  display: block;
+  object-position: top center;
 }
 
 .row__body {
   flex: 1;
   min-width: 0;
-  min-height: 0;
+  min-height: min-content;
   display: flex;
   flex-direction: column;
-  gap: clamp(4px, 0.8vh, 10px);
-  justify-content: center;
+  align-items: stretch;
+  gap: 0;
+  justify-content: flex-start;
 }
 
-.row__title {
+/* 游戏名：叠在封面图左上角 */
+.row__thumb .row__title {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: 2;
+  max-width: calc(100% - 10px);
+  margin: 0;
+  padding: 4px 8px;
   font-family: var(--font-display);
-  font-size: clamp(0.72rem, 1.35vh + 0.2vw, 0.95rem);
+  font-size: clamp(0.62rem, 1.05vh + 0.18vw, 0.82rem);
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  text-align: left;
+  line-height: 1.2;
   color: var(--lime);
-  line-height: 1.15;
-  flex: 0 0 auto;
-  text-shadow: 0 0 10px rgba(184, 255, 0, 0.32);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 14px rgba(184, 255, 0, 0.35);
+  background: rgba(5, 2, 12, 0.82);
+  border: 1px solid rgba(0, 243, 255, 0.38);
+  pointer-events: none;
 }
 
 .row__ta {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   width: 100%;
   min-height: 0;
   resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
   padding: clamp(8px, 1.2vh, 14px) clamp(10px, 1.4vw, 16px);
   border: 2px solid rgba(0, 243, 255, 0.32);
   border-radius: 0;
@@ -281,6 +318,28 @@ body {
 .row__ta:focus {
   border-color: var(--magenta);
   box-shadow: 0 0 0 1px rgba(255, 42, 109, 0.38);
+  overflow: auto;
+}
+
+/* 长评：保留分段空行，行距略松 */
+.row__ta--long {
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow: hidden;
+}
+
+/* 主区较窄时改为上图下文，避免标题/评论与封面横向挤叠 */
+@media (max-width: 960px) {
+  .row--compact {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .row__thumb {
+    max-width: 100%;
+    align-self: center;
+  }
 }
 
 .dock {
@@ -528,12 +587,16 @@ body {
   }
 
   .row__thumb {
-    flex: 0 0 auto;
-    width: min(clamp(130px, 46vw, 220px), 48%);
-    max-width: 48%;
-    aspect-ratio: var(--steam-header-w) / var(--steam-header-h);
-    max-height: 100%;
-    min-width: 0;
+    max-width: min(var(--steam-thumb-w), 92vw, 100%);
+  }
+
+  .row__thumb__mat {
+    max-width: 100%;
+  }
+
+  .row__thumb__mat img {
+    max-width: min(var(--steam-thumb-w), 100%);
+    max-height: var(--steam-thumb-h);
   }
 
   .dock__inner {
