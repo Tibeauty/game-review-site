@@ -1,11 +1,8 @@
 /**
  * 游戏库：左侧分类；每条左侧小封面 + 右侧短评；Steam / 本地 assets 图。
- * 评价写本机；底部保存可同步 server/index.mjs。
+ * 评价自动保存到浏览器本机 localStorage。
  */
 (function () {
-  const LS_API = "gamescope-api-base";
-  const LS_TOKEN = "gamescope-api-token";
-  const LS_LAST = "gamescope-last-saved-at";
   const LS_LANG = "gamescope-locale";
 
   /** 在地址栏加 `?covers=debug` 可查看每条封面配置的 URL 链与浏览器最终使用的地址 */
@@ -23,18 +20,11 @@
       catNavAria: "游戏分类",
       langBtn: "English",
       langAria: "切换到英语",
-      dockApi: "API",
-      dockToken: "TOKEN",
-      phApi: "http://127.0.0.1:3456",
-      phToken: "可选",
-      saveBtn: "保存评价",
-      pullFail: "远程读取失败，已使用本机数据",
-      saving: "正在保存…",
-      savedLocal: "已保存到本机",
-      savedBoth: "已保存到服务器与本机",
-      savedLocalErr: "本机已保存 · 服务器失败",
-      networkErr: "网络错误",
-      lastSaved: "上次保存：",
+      reviewExpand: "展开评论",
+      reviewCollapse: "收起评论",
+      navHome: "首页",
+      homeTitle: "欢迎来到我的游戏评价网站",
+      homeBadge: "GameScope · 个人游戏札记",
     },
     en: {
       pageTitle: "GameScope",
@@ -42,19 +32,27 @@
       catNavAria: "Game categories",
       langBtn: "中文",
       langAria: "Switch to Chinese",
-      dockApi: "API",
-      dockToken: "TOKEN",
-      phApi: "http://127.0.0.1:3456",
-      phToken: "Optional",
-      saveBtn: "Save reviews",
-      pullFail: "Remote fetch failed; using local data",
-      saving: "Saving…",
-      savedLocal: "Saved locally",
-      savedBoth: "Saved to server and locally",
-      savedLocalErr: "Saved locally · server error",
-      networkErr: "network error",
-      lastSaved: "Last saved: ",
+      reviewExpand: "Expand review",
+      reviewCollapse: "Collapse review",
+      navHome: "Home",
+      homeTitle: "Welcome to My Game Review Site",
+      homeBadge: "GameScope · Personal Notes",
     },
+  };
+
+  const HOME_COPY = {
+    zh: [
+      "虽然不知道是不是真的会有人看到这个网站，但主包真的很期待自己的发言被看见的（自称主包只是觉得好玩，并没有特殊的意思）。",
+      "写这个网站的最初目的，就是主包玩了这么多年游戏，也很少记录或者发表一些什么，感觉对自己游戏的生涯还蛮空虚的。在公众网站上怕被别人攻击，所以想找一个地方，可以随意诉说、记录一下自己的看法和游玩经历。",
+      "所有内容都是主包个人看法。有你觉得不对的地方呢就看着玩，因为这个网站只有主包可以修改，哈哈哈。网络之地就是可以这么为所欲为。",
+      "因为之前主包只玩自己喜欢的游戏，并且沉迷于推理解谜和 OL，很少去体验其他类型的游戏，让主包错失很多游戏的玩法。所以现在在改变，并且在体验更多类型的游戏。如果玩完一款，主包会持续更新个人评价。",
+    ],
+    en: [
+      "I am not sure anyone will ever see this site, but I genuinely hope these notes find a reader someday (I call myself 主包 just for fun—no special meaning).",
+      "I built this place because after years of gaming I rarely wrote anything down, and my play history felt oddly empty. Public platforms can feel hostile, so I wanted a corner where I can speak freely about what I played and how it felt.",
+      "Everything here is personal opinion. If you disagree, treat it as one person's diary—the only editor is me. That is the joy of having your own little site on the internet.",
+      "I used to stick to favorites—puzzles, mysteries, and online games—and missed whole genres. I am branching out now, and I will keep adding reviews as I finish more titles.",
+    ],
   };
 
   function t(key) {
@@ -392,7 +390,7 @@
 
   const storageKey = (slug) => `gamescope-review::${slug}`;
 
-  let activeId = categories[0].id;
+  let activeId = "home";
 
   function forEachGame(fn) {
     categories.forEach((cat) => {
@@ -405,98 +403,11 @@
     return `${cat.id}-${index}-${base || "game"}`;
   }
 
-  function getApiBase() {
-    const el = document.getElementById("dock-api");
-    const fromInput = el && el.value.trim();
-    const fromWin =
-      typeof window !== "undefined" &&
-      window.GAMEREVIEW_API &&
-      String(window.GAMEREVIEW_API).trim();
-    const fromLs = localStorage.getItem(LS_API) || "";
-    return (fromInput || fromWin || fromLs).replace(/\/$/, "");
-  }
-
-  function getToken() {
-    const el = document.getElementById("dock-token");
-    if (el && el.value.trim()) return el.value.trim();
-    return localStorage.getItem(LS_TOKEN) || "";
-  }
-
-  function authHeaders() {
-    const t = getToken();
-    if (!t) return {};
-    return { Authorization: `Bearer ${t}` };
-  }
-
-  function setStatus(text, tone) {
-    const el = document.getElementById("dock-status");
-    if (!el) return;
-    el.textContent = text;
-    el.dataset.tone = tone || "";
-  }
-
   function flushTextareasToStorage() {
     document.querySelectorAll("textarea.row__ta[data-slug]").forEach((ta) => {
       const slug = ta.getAttribute("data-slug");
       if (slug) localStorage.setItem(storageKey(slug), ta.value);
     });
-  }
-
-  function readAllReviewsMap() {
-    const map = {};
-    forEachGame((cat, g, i) => {
-      const slug = gameSlug(cat, g, i);
-      map[slug] = localStorage.getItem(storageKey(slug)) || "";
-    });
-    return map;
-  }
-
-  function applyRemoteReviews(reviews) {
-    if (!reviews || typeof reviews !== "object") return;
-    Object.entries(reviews).forEach(([slug, text]) => {
-      if (typeof slug === "string" && typeof text === "string") {
-        localStorage.setItem(storageKey(slug), text);
-      }
-    });
-  }
-
-  async function pullRemote() {
-    const base = getApiBase();
-    if (!base) return;
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 5000);
-    try {
-      const r = await fetch(`${base}/reviews`, {
-        method: "GET",
-        headers: { ...authHeaders() },
-        signal: ctrl.signal,
-      });
-      clearTimeout(timer);
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const data = await r.json();
-      if (data.reviews) applyRemoteReviews(data.reviews);
-    } catch {
-      setStatus(t("pullFail"), "warn");
-    }
-  }
-
-  async function pushRemote(map) {
-    const base = getApiBase();
-    if (!base) return { ok: true, localOnly: true };
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 8000);
-    const r = await fetch(`${base}/reviews`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        ...authHeaders(),
-      },
-      body: JSON.stringify({ reviews: map }),
-      signal: ctrl.signal,
-    });
-    clearTimeout(timer);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
   }
 
   function bindReview(ta, slug, defaultText) {
@@ -512,10 +423,131 @@
     });
   }
 
-  function reviewTextareaRows() {
-    // 固定保持原始输入框高度，超出部分通过 CSS 折叠（overflow:hidden），
-    // 聚焦时允许滚动查看。
-    return 2;
+  function syncReviewCollapsedHeight(row) {
+    const mat = row.querySelector(".row__thumb__mat");
+    const review = row.querySelector(".row__review");
+    if (!mat || !review) return;
+    const h = mat.offsetHeight;
+    if (h > 0) review.style.setProperty("--review-collapsed-h", `${h}px`);
+  }
+
+  /** 展开时按全文高度撑开 textarea，不在框内滚动 */
+  function fitExpandedTextarea(ta) {
+    ta.style.height = "0px";
+    ta.style.height = `${ta.scrollHeight}px`;
+  }
+
+  function collapseReviewTextarea(ta) {
+    ta.style.height = "";
+  }
+
+  function updateReviewToggle(row) {
+    const review = row.querySelector(".row__review");
+    const ta = row.querySelector(".row__ta");
+    const btn = row.querySelector(".row__review-toggle");
+    if (!review || !ta || !btn) return;
+
+    syncReviewCollapsedHeight(row);
+
+    if (review.classList.contains("is-expanded")) {
+      fitExpandedTextarea(ta);
+      btn.hidden = false;
+      review.classList.add("has-toggle");
+      btn.setAttribute("aria-expanded", "true");
+      return;
+    }
+
+    collapseReviewTextarea(ta);
+    const needsToggle = ta.scrollHeight > ta.clientHeight + 4;
+    btn.hidden = !needsToggle;
+    review.classList.toggle("has-toggle", needsToggle);
+    if (!needsToggle) {
+      btn.setAttribute("aria-expanded", "false");
+      review.classList.remove("is-expanded");
+      return;
+    }
+    btn.setAttribute("aria-expanded", "false");
+  }
+
+  function bindReviewExpand(row) {
+    const review = row.querySelector(".row__review");
+    const btn = row.querySelector(".row__review-toggle");
+    const ta = row.querySelector(".row__ta");
+    if (!review || !btn || !ta) return;
+
+    const setLabel = () => {
+      const open = review.classList.contains("is-expanded");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.setAttribute("aria-label", open ? t("reviewCollapse") : t("reviewExpand"));
+    };
+
+    btn.addEventListener("click", () => {
+      const willExpand = !review.classList.contains("is-expanded");
+      review.classList.toggle("is-expanded", willExpand);
+      if (willExpand) {
+        fitExpandedTextarea(ta);
+      } else {
+        collapseReviewTextarea(ta);
+        requestAnimationFrame(() => updateReviewToggle(row));
+      }
+      setLabel();
+    });
+
+    ta.addEventListener("input", () => {
+      if (review.classList.contains("is-expanded")) {
+        fitExpandedTextarea(ta);
+      }
+      requestAnimationFrame(() => updateReviewToggle(row));
+    });
+
+    const img = row.querySelector(".row__thumb__mat img");
+    if (img) {
+      if (img.complete) requestAnimationFrame(() => updateReviewToggle(row));
+      else img.addEventListener("load", () => updateReviewToggle(row), { once: true });
+    } else {
+      requestAnimationFrame(() => updateReviewToggle(row));
+    }
+
+    if (typeof ResizeObserver !== "undefined") {
+      const mat = row.querySelector(".row__thumb__mat");
+      if (mat) {
+        const ro = new ResizeObserver(() => updateReviewToggle(row));
+        ro.observe(mat);
+      }
+    }
+
+    setLabel();
+  }
+
+  function renderHome() {
+    const root = document.getElementById("home-root");
+    if (!root) return;
+    const paras = HOME_COPY[locale] || HOME_COPY.zh;
+    root.innerHTML = `
+      <article class="home__panel">
+        <p class="home__badge">${escHtml(t("homeBadge"))}</p>
+        <h1 class="home__title">${escHtml(t("homeTitle"))}</h1>
+        <div class="home__divider" aria-hidden="true"></div>
+        <div class="home__body">
+          ${paras.map((p) => `<p class="home__p">${escHtml(p)}</p>`).join("")}
+        </div>
+      </article>
+    `;
+  }
+
+  function setStageView() {
+    const homeRoot = document.getElementById("home-root");
+    const listRoot = document.getElementById("library-root");
+    const onHome = activeId === "home";
+
+    if (homeRoot) homeRoot.hidden = !onHome;
+    if (listRoot) listRoot.hidden = onHome;
+
+    if (onHome) renderHome();
+    else renderList();
+
+    const scroll = document.querySelector(".stage__scroll");
+    if (scroll) scroll.scrollTop = 0;
   }
 
   function renderList() {
@@ -530,7 +562,6 @@
       row.className = "row row--compact";
 
       const shown = displayTitle(g);
-      const taRows = reviewTextareaRows(g);
       row.innerHTML = `
         <div class="row__thumb">
           <span class="row__thumb__mat">
@@ -539,7 +570,12 @@
           <div class="row__title">${escHtml(shown)}</div>
         </div>
         <div class="row__body">
-          <textarea class="row__ta${g.defaultReview ? " row__ta--long" : ""}" data-slug="${slug}" spellcheck="false" rows="${taRows}" aria-label="${reviewAria(shown)}"></textarea>
+          <div class="row__review">
+            <textarea class="row__ta${g.defaultReview ? " row__ta--long" : ""}" data-slug="${slug}" spellcheck="false" rows="2" aria-label="${reviewAria(shown)}"></textarea>
+            <button type="button" class="row__review-toggle" hidden aria-expanded="false" aria-label="${escHtml(t("reviewExpand"))}">
+              <span class="row__review-toggle__icon" aria-hidden="true"></span>
+            </button>
+          </div>
         </div>
       `;
 
@@ -552,6 +588,8 @@
       }
       bindHeroImage(img, g);
       bindReview(row.querySelector(".row__ta"), slug, g.defaultReview);
+      bindReviewExpand(row);
+      requestAnimationFrame(() => updateReviewToggle(row));
       root.appendChild(row);
     });
 
@@ -566,82 +604,26 @@
   function renderSidebar() {
     const rail = document.getElementById("sidebar");
     if (!rail) return;
-    rail.innerHTML = categories
-      .map(
-        (c) =>
-          `<button type="button" class="rail__btn${c.id === activeId ? " is-active" : ""}" data-id="${c.id}">${escHtml(categoryLabel(c))}</button>`
-      )
-      .join("");
+    const homeBtn = `<button type="button" class="rail__btn rail__btn--home${activeId === "home" ? " is-active" : ""}" data-id="home">${escHtml(t("navHome"))}</button>`;
+    rail.innerHTML =
+      homeBtn +
+      categories
+        .map(
+          (c) =>
+            `<button type="button" class="rail__btn${c.id === activeId ? " is-active" : ""}" data-id="${c.id}">${escHtml(categoryLabel(c))}</button>`
+        )
+        .join("");
 
     rail.querySelectorAll(".rail__btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        flushTextareasToStorage();
+        if (activeId !== "home") flushTextareasToStorage();
         activeId = btn.getAttribute("data-id");
         rail.querySelectorAll(".rail__btn").forEach((b) => {
           b.classList.toggle("is-active", b.getAttribute("data-id") === activeId);
         });
-        renderList();
+        setStageView();
       });
     });
-  }
-
-  function persistDockPrefs() {
-    const apiEl = document.getElementById("dock-api");
-    const tokEl = document.getElementById("dock-token");
-    if (apiEl) {
-      const v = apiEl.value.trim();
-      if (v) localStorage.setItem(LS_API, v);
-      else localStorage.removeItem(LS_API);
-    }
-    if (tokEl) {
-      const t = tokEl.value.trim();
-      if (t) localStorage.setItem(LS_TOKEN, t);
-      else localStorage.removeItem(LS_TOKEN);
-    }
-  }
-
-  function loadDockPrefs() {
-    const apiEl = document.getElementById("dock-api");
-    const tokEl = document.getElementById("dock-token");
-    const savedApi = localStorage.getItem(LS_API) || "";
-    const savedTok = localStorage.getItem(LS_TOKEN) || "";
-    const winApi =
-      typeof window !== "undefined" && window.GAMEREVIEW_API
-        ? String(window.GAMEREVIEW_API).trim()
-        : "";
-    if (apiEl) apiEl.value = savedApi || winApi;
-    if (tokEl) tokEl.value = savedTok;
-  }
-
-  function formatTime(ts) {
-    try {
-      return new Date(ts).toLocaleString(locale === "zh" ? "zh-CN" : "en-US");
-    } catch {
-      return "";
-    }
-  }
-
-  async function onSaveClick() {
-    persistDockPrefs();
-    setStatus(t("saving"), "busy");
-    flushTextareasToStorage();
-    const map = readAllReviewsMap();
-    const now = Date.now();
-    localStorage.setItem(LS_LAST, String(now));
-
-    try {
-      const res = await pushRemote(map);
-      if (res && res.localOnly) {
-        setStatus(`${t("savedLocal")} · ${formatTime(now)}`, "ok");
-      } else {
-        setStatus(`${t("savedBoth")} · ${formatTime(now)}`, "ok");
-      }
-    } catch (e) {
-      setStatus(
-        `${t("savedLocalErr")}（${e && e.message ? e.message : t("networkErr")}）`,
-        "err"
-      );
-    }
   }
 
   function initLangToggle() {
@@ -670,48 +652,14 @@
       langBtn.setAttribute("aria-label", t("langAria"));
     }
 
-    const apiKey = document.getElementById("dock-label-api");
-    if (apiKey) apiKey.textContent = t("dockApi");
-
-    const tokKey = document.getElementById("dock-label-token");
-    if (tokKey) tokKey.textContent = t("dockToken");
-
-    const apiInput = document.getElementById("dock-api");
-    if (apiInput) apiInput.placeholder = t("phApi");
-
-    const tokInput = document.getElementById("dock-token");
-    if (tokInput) tokInput.placeholder = t("phToken");
-
-    const saveBtn = document.getElementById("dock-save");
-    if (saveBtn) saveBtn.textContent = t("saveBtn");
-
     renderSidebar();
-    renderList();
+    setStageView();
   }
 
-  function initDock() {
-    loadDockPrefs();
-    const btn = document.getElementById("dock-save");
-    if (btn) btn.addEventListener("click", () => onSaveClick());
-
-    ["dock-api", "dock-token"].forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener("change", persistDockPrefs);
-    });
-  }
-
-  async function boot() {
+  function boot() {
     loadLocale();
-    initDock();
     initLangToggle();
     applyChrome();
-    await pullRemote();
-    const st = document.getElementById("dock-status");
-    const last = localStorage.getItem(LS_LAST);
-    if (last && st && !st.textContent.trim()) {
-      setStatus(`${t("lastSaved")}${formatTime(Number(last))}`, "");
-    }
   }
 
   if (document.readyState === "loading") {
